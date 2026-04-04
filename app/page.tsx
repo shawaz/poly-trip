@@ -37,7 +37,7 @@ function SettingsModal({
 }) {
   const [form, setForm] = useState(settings);
   const isDark = theme === 'dark';
-  
+
   const bg = isDark ? 'bg-[#0a0a0a]' : 'bg-white';
   const border = isDark ? 'border-white/10' : 'border-gray-200';
   const text = isDark ? 'text-white' : 'text-gray-900';
@@ -228,14 +228,14 @@ interface StrategyCardProps {
 function StrategyCard({ data, onToggle, onSettings, theme }: StrategyCardProps) {
   const { sNum, tf, trades, wins, pnl, balance, winRate, isRunning } = data;
   const isDark = theme === 'dark';
-  
+
   const bg = isDark ? 'bg-[#0a0a0a]' : 'bg-white';
   const border = isDark ? 'border-white/5' : 'border-gray-200';
   const hoverBorder = isDark ? 'hover:border-white/10' : 'hover:border-gray-300';
   const text = isDark ? 'text-white' : 'text-gray-900';
   const textMuted = isDark ? 'text-white/40' : 'text-gray-400';
   const cardBg = isDark ? 'bg-white/5' : 'bg-gray-100';
-  
+
   const wrColor = winRate >= 70 ? '#00d585' : winRate >= 50 ? '#f59e0b' : '#ef4444';
   const pnlColor = pnl >= 0 ? '#00d585' : '#ef4444';
   const btnBg = isRunning
@@ -265,20 +265,20 @@ function StrategyCard({ data, onToggle, onSettings, theme }: StrategyCardProps) 
         ))}
       </div>
 
-        <div className="mb-4 grid grid-cols-3 gap-2">
-          <div className={`rounded-lg ${cardBg} p-2 text-center`}>
-            <div className={`text-xs ${textMuted}`}>Trades</div>
-            <div className={`text-sm font-semibold ${text}`}>{trades}</div>
-          </div>
-          <div className={`rounded-lg ${cardBg} p-2 text-center`}>
-            <div className={`text-xs ${textMuted}`}>Wins</div>
-            <div className="text-sm font-semibold text-[#00d585]">{wins}</div>
-          </div>
-          <div className={`rounded-lg ${cardBg} p-2 text-center`}>
-            <div className={`text-xs ${textMuted}`}>Loss</div>
-            <div className="text-sm font-semibold text-red-400">{trades - wins}</div>
-          </div>
+      <div className="mb-4 grid grid-cols-3 gap-2">
+        <div className={`rounded-lg ${cardBg} p-2 text-center`}>
+          <div className={`text-xs ${textMuted}`}>Trades</div>
+          <div className={`text-sm font-semibold ${text}`}>{trades}</div>
         </div>
+        <div className={`rounded-lg ${cardBg} p-2 text-center`}>
+          <div className={`text-xs ${textMuted}`}>Wins</div>
+          <div className="text-sm font-semibold text-[#00d585]">{wins}</div>
+        </div>
+        <div className={`rounded-lg ${cardBg} p-2 text-center`}>
+          <div className={`text-xs ${textMuted}`}>Loss</div>
+          <div className="text-sm font-semibold text-red-400">{trades - wins}</div>
+        </div>
+      </div>
 
       <div className="mb-4 flex items-end justify-between">
         <div>
@@ -364,7 +364,7 @@ export default function Home() {
   const handleAutoSelect = useCallback((count: number) => {
     const sorted = [...groups.flat()].sort((a, b) => b.winRate - a.winRate);
     const topKeys = new Set(sorted.slice(0, count).map((c) => c.key));
-    
+
     setGroups((prev) =>
       prev.map((row) =>
         row.map((card) => ({
@@ -376,11 +376,11 @@ export default function Home() {
   }, [groups]);
 
   let allCards = groups.flat();
-  
+
   if (filterStrategy !== null) {
     allCards = allCards.filter((c) => c.sNum === parseInt(filterStrategy!));
   }
-  
+
   if (filterTimeframe !== null) {
     allCards = allCards.filter((c) => c.tf === filterTimeframe);
   }
@@ -553,10 +553,6 @@ export default function Home() {
       </header>
 
       <main className="mx-auto max-w-6xl px-6 py-8">
-        <div className="mb-6 flex items-center justify-between">
-          <h2 className={`text-sm font-medium ${textMuted}`}>Strategies</h2>
-          <span className={`text-xs ${textMutedLight}`}>{allCards.length} strategies</span>
-        </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {allCards.map((card) => (

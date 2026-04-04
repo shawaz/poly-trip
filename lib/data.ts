@@ -125,7 +125,7 @@ export function makeCard(sNum: number, tf: string, running: boolean): CardData {
 
 export function initData(): Groups {
   return Array.from({ length: STRATEGY_COUNT }, (_, si) =>
-    TIMEFRAMES.map((tf) => makeCard(si + 1, tf, false))
+    TIMEFRAMES.map((tf) => makeCard(si + 1, tf, true))
   );
 }
 

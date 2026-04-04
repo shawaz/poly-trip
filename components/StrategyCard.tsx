@@ -20,7 +20,7 @@ export default function StrategyCard({ data, onToggle, onCoinDir }: Props) {
   } = data;
 
   const pnlPos = pnl >= 0;
-  const pct = Math.min(Math.max(((balance - capital) / (target - capital)) * 100, 0), 100);
+  const pct = Math.min(Math.max((pnl / (target - capital)) * 100, 0), 100);
 
   return (
     <div
@@ -110,15 +110,15 @@ export default function StrategyCard({ data, onToggle, onCoinDir }: Props) {
 
         <Divider />
 
-        {/* Balance + Target */}
+        {/* Live P&L + Target */}
         <div className="flex items-center justify-between py-2.5">
           <div className="flex items-center gap-1.5">
-            <span className="text-white/60 text-[12px] font-semibold">Balance:</span>
+            <span className="text-white/60 text-[12px] font-semibold">Live P&L:</span>
             <span
               className="text-[12px] font-semibold"
               style={{ color: pnlPos ? '#00d585' : '#ef4444' }}
             >
-              ${balance.toLocaleString()}
+              {pnlPos ? '+' : ''}${pnl}
             </span>
           </div>
           <span className="text-white/40 text-[12px] font-semibold">

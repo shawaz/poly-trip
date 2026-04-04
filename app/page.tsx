@@ -16,7 +16,7 @@ const COINS = [
 ];
 
 interface StrategySettings {
-  balance: number;
+  bustThreshold: number;
   sl: number;
   tp: number;
   perTrade: number;
@@ -69,11 +69,12 @@ function SettingsModal({
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className={`mb-1 block text-xs ${textMuted}`}>Balance ($)</label>
+              <label className={`mb-1 block text-xs ${textMuted}`}>Bust (%)</label>
               <input
                 type="number"
-                value={form.balance}
-                onChange={(e) => setForm({ ...form, balance: parseFloat(e.target.value) || 0 })}
+                step="0.1"
+                value={form.bustThreshold}
+                onChange={(e) => setForm({ ...form, bustThreshold: parseFloat(e.target.value) || 0 })}
                 className={`w-full rounded-lg border ${inputBg} px-3 py-2 text-sm ${inputText} focus:outline-none focus:ring-2 focus:ring-[#00d585]`}
               />
             </div>
@@ -323,7 +324,8 @@ export default function Home() {
   const [settingsKey, setSettingsKey] = useState<string | null>(null);
   const [settings, setSettings] = useState<Record<string, StrategySettings>>({});
   const [autoCount, setAutoCount] = useState<number>(0);
-  const [phase] = useState<Phase>(1);
+  const [phase, setPhase] = useState<Phase>(1);
+  const [walletBalance] = useState<number>(10000);
 
   const isDark = theme === 'dark';
   const bg = isDark ? 'bg-black' : 'bg-gray-50';
@@ -340,18 +342,23 @@ export default function Home() {
   const handleToggle = useCallback((key: string) => {
     setGroups((prev) =>
       prev.map((row) =>
-        row.map((card) =>
-          card.key === key ? { ...card, isRunning: !card.isRunning } : card
-        )
+        row.map((card) => {
+          if (card.key !== key) return card;
+          const newIsRunning = !card.isRunning;
+          if (newIsRunning && phase === 1) {
+            setPhase(2);
+          }
+          return { ...card, isRunning: newIsRunning };
+        })
       )
     );
-  }, []);
+  }, [phase]);
 
   const openSettings = useCallback((key: string) => {
     if (!settings[key]) {
       setSettings((prev) => ({
         ...prev,
-        [key]: { balance: 1000, sl: 2, tp: 5, perTrade: 100, maxPositions: 3, riskPercent: 2 },
+        [key]: { bustThreshold: 10, sl: 2, tp: 5, perTrade: 100, maxPositions: 3, riskPercent: 2 },
       }));
     }
     setSettingsKey(key);
@@ -463,6 +470,10 @@ export default function Home() {
               <div className="flex items-center gap-2">
                 <span className={text}>{runningCount}</span>
                 <span className={textMutedLight}>active</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className={text}>${walletBalance.toLocaleString()}</span>
+                <span className={textMutedLight}>Wallet</span>
               </div>
             </div>
 

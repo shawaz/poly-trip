@@ -6,7 +6,6 @@ import { initData, TIMEFRAMES } from '@/lib/data';
 
 type Theme = 'dark' | 'light';
 type SortBy = 'default' | 'winrate' | 'pnl' | 'balance';
-type Phase = 1 | 2 | 3;
 
 const COINS = [
   { symbol: 'BTC', label: '₿', color: '#F7931A' },
@@ -240,18 +239,36 @@ function StrategyCard({ data, onToggle, onSettings, theme }: StrategyCardProps) 
   const wrColor = winRate >= 70 ? '#00d585' : winRate >= 50 ? '#f59e0b' : '#ef4444';
   const pnlColor = pnl >= 0 ? '#00d585' : '#ef4444';
   const btnBg = isRunning
-    ? (isDark ? 'bg-red-500/20 text-red-400' : 'bg-red-100 text-red-600')
+    ? (isDark ? 'bg-red-500/20 text-red-400' : 'bg-[#00d585] text-[#00321f]')
     : (isDark ? 'bg-white/10 text-white/60' : 'bg-gray-200 text-gray-600');
 
   return (
     <div className={`group relative overflow-hidden rounded-2xl border ${border} ${bg} p-5 transition-all ${hoverBorder}`}>
-      {isRunning && <div className="absolute left-0 top-0 h-[2px] w-full bg-[#00d585]" />}
+      <div className="absolute left-0 top-0 h-[2px] w-full bg-[#00d585]" />
 
       <div className="mb-4 flex items-start justify-between">
         <div>
           <div className="flex items-center gap-2">
             <span className={`text-2xl font-bold ${text}`}>T{sNum}</span>
             <span className={`rounded ${cardBg} px-1.5 py-0.5 text-[10px] font-medium ${textMuted}`}>{tf}</span>
+          </div>
+          <div className="flex items-center gap-2 mt-1">
+            <span className="flex items-center gap-1 text-[10px] text-[#f59e0b]">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#f59e0b] opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#f59e0b]" />
+              </span>
+              PAPER
+            </span>
+            {isRunning && (
+              <span className="flex items-center gap-1 text-[10px] text-[#00d585]">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00d585] opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00d585]" />
+                </span>
+                LIVE
+              </span>
+            )}
           </div>
         </div>
         <div className="text-right">
@@ -299,7 +316,7 @@ function StrategyCard({ data, onToggle, onSettings, theme }: StrategyCardProps) 
           onClick={onToggle}
           className={`flex-1 rounded-lg py-2.5 text-sm font-semibold transition-all ${btnBg}`}
         >
-          {isRunning ? 'Stop' : 'Start'}
+          {isRunning ? 'STOP LIVE' : 'START LIVE'}
         </button>
         <button
           onClick={onSettings}
@@ -324,8 +341,24 @@ export default function Home() {
   const [settingsKey, setSettingsKey] = useState<string | null>(null);
   const [settings, setSettings] = useState<Record<string, StrategySettings>>({});
   const [autoCount, setAutoCount] = useState<number>(0);
-  const [phase, setPhase] = useState<Phase>(1);
-  const [walletBalance] = useState<number>(10000);
+  const [walletBalance, setWalletBalance] = useState<number>(0);
+
+  useEffect(() => {
+    const fetchWallet = async () => {
+      try {
+        const res = await fetch('/api/wallet');
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.balance) {
+            setWalletBalance(data.balance);
+          }
+        }
+      } catch {
+        // fallback to 0
+      }
+    };
+    fetchWallet();
+  }, []);
 
   const isDark = theme === 'dark';
   const bg = isDark ? 'bg-black' : 'bg-gray-50';
@@ -342,17 +375,12 @@ export default function Home() {
   const handleToggle = useCallback((key: string) => {
     setGroups((prev) =>
       prev.map((row) =>
-        row.map((card) => {
-          if (card.key !== key) return card;
-          const newIsRunning = !card.isRunning;
-          if (newIsRunning && phase === 1) {
-            setPhase(2);
-          }
-          return { ...card, isRunning: newIsRunning };
-        })
+        row.map((card) =>
+          card.key === key ? { ...card, isRunning: !card.isRunning } : card
+        )
       )
     );
-  }, [phase]);
+  }, []);
 
   const openSettings = useCallback((key: string) => {
     if (!settings[key]) {
@@ -445,12 +473,13 @@ export default function Home() {
             <div>
               <span className={`text-lg font-medium ${text}`}>PolyTrip</span>
               <div className="flex items-center gap-2 mt-0.5">
-                <span className={`text-[10px] px-2 py-0.5 rounded-full ${cardBg} ${textMuted}`}>
-                  Phase {phase}
+                <span className="flex items-center gap-1 text-[10px] text-[#f59e0b]">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#f59e0b] opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-[#f59e0b]" />
+                  </span>
+                  Paper Trading
                 </span>
-                {phase === 1 && <span className="text-[10px] text-[#00d585]">Paper Trade</span>}
-                {phase === 2 && <span className="text-[10px] text-[#f59e0b]">Live Trade</span>}
-                {phase === 3 && <span className="text-[10px] text-purple-400">Commercial (10% fee)</span>}
               </div>
             </div>
           </div>
@@ -492,24 +521,7 @@ export default function Home() {
               )}
             </button>
 
-            {phase === 1 && (
-              <div className={`flex items-center gap-2 rounded-lg ${cardBg} px-4 py-2 text-sm`}>
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#f59e0b] opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#f59e0b]" />
-                </span>
-                <span className="text-[#f59e0b]">Bot runs locally</span>
-              </div>
-            )}
 
-            {phase === 3 && (
-              <button className={`flex items-center gap-2 rounded-lg ${cardBg} px-4 py-2 text-sm font-medium ${text} transition-all hover:opacity-80`}>
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                </svg>
-                Login
-              </button>
-            )}
           </div>
         </div>
 

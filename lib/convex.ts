@@ -50,6 +50,10 @@ export function usePendingAiDecisions() {
   return useQuery(api.ai_decisions.getPending);
 }
 
+export function useMainWallet() {
+  return useQuery(api.wallets.getMain);
+}
+
 export const startBot = useMutation(api.bot.start);
 export const stopBot = useMutation(api.bot.stop);
 
